@@ -17,6 +17,8 @@ server_socket.listen()
 
 sockets_list = [server_socket]
 clients = {}
+user_left = False
+new_user = False
 
 print(f"Listening for connections on {IP} on port {PORT}...")
 
@@ -56,6 +58,11 @@ while True:
 			sockets_list.append(client_socket)
 			clients[client_socket] = user
 			print("New connection accepted from {}:{}, username:{}".format(*client_address, user["data"].decode("utf-8")))
+			new_user_info = user["data"]
+			new_user_message = "/%&? has entered the dungeon./%&?".encode("utf-8")
+			new_user_message_header = f"{len(new_user_message):<{HEADER_LENGTH}}".encode("utf-8")
+			new_user_info_header = f"{len(new_user_info):<{HEADER_LENGTH}}".encode("utf-8")
+			new_user = True
 
 		else:
 			#For the message
@@ -64,10 +71,18 @@ while True:
 			#For when the client disconnects
 			if message is False:
 				print("Closed connection from: {}".format(clients[notified_socket]["data"].decode("utf-8")))
+				user_left_info = user["data"]
+				user_left_message = "/%&? has left the dungeon./%&?".encode("utf-8")
+				user_left_message_header = f'{len(user_left_message):<{HEADER_LENGTH}}'.encode("utf-8")
+				user_left_info_header = f'{len(user_left_info):<{HEADER_LENGTH}}'.encode("utf-8")
+				user_left = True
+				
 				sockets_list.remove(notified_socket)
 				del clients[notified_socket]
 
 				continue
+
+
 
 			#Now for recieving the message
 			user = clients[notified_socket]
@@ -77,6 +92,13 @@ while True:
 
 			#Broadcasting the message to all the clients
 			for client_socket in clients:
+				if user_left == True:	
+					client_socket.send(user_left_info_header + user_left_info + user_left_message_header + user_left_message)
+					user_left = False
+				if new_user == True:
+					client_socket.send(new_user_info_header + new_user_info + new_user_message_header + new_user_message)
+					new_user = False
+
 
 				#But not the the sender
 				if client_socket != notified_socket:

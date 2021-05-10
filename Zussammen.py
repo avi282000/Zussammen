@@ -94,13 +94,13 @@ class InfoPage(GridLayout):
 		self.message.bind(width=self.update_text_width)
 		self.add_widget(self.message)
 
-		self.back = Button(text="Back")
-		self.back.bind(on_press=self.back_button)
-		self.add_widget(Label())
-		self.add_widget(self.back)
-
-	def back_button(self,instance):
-		chat_app.screen_manager.current = "Connect"
+		'''self.back = Button(text="Back")
+								self.back.bind(on_press=self.back_button)
+								self.add_widget(Label())
+								self.add_widget(self.back)
+						
+							def back_button(self,instance):
+								chat_app.screen_manager.current = "Connect"'''
 
 
 
@@ -139,7 +139,7 @@ class ChatApp(App):
 def show_error(message):
 	chat_app.info_page.update_info(message)
 	chat_app.screen_manager.current = "Info"
-	'''Clock.schedule_once(sys.exit, 10)'''
+	Clock.schedule_once(sys.exit, 5)
 
 #The Chat Page (An App in itself)
 class ChatPage(GridLayout):
@@ -155,7 +155,7 @@ class ChatPage(GridLayout):
 		
 
 		#For Row 2
-		self.new_message = TextInput(width = Window.size[1]*0.8, size_hint_x = None, multiline = False) #Creating a Widget for typing in a new message. Will take up 80% of the width of the row. Clearly, Multilining won't be allowed
+		self.new_message = TextInput(width = Window.size[0]*0.8, size_hint_x = None, multiline = False) #Creating a Widget for typing in a new message. Will take up 80% of the width of the row. Clearly, Multilining won't be allowed
 		self.send = Button(text = "Send") #Creating the "Send" Button
 		self.send.bind(on_press = self.send_message)
 		
@@ -208,14 +208,21 @@ class ChatPage(GridLayout):
 		self.new_message.focus = True
 
 	def incoming_message(self, username, message):
-		self.history.update_chat_history(f"[color=007194]{username}[/color] > {message}") #Chose Dark Cyan (#007194) for the color of the username
+		if message == "/%&? has entered the dungeon./%&?":
+			message=message.strip("/%&?")
+			self.history.update_chat_history(f"[color=c0d104] {username} {message} [/color]")
+		elif message =="/%&? has left the dungeon./%&?":
+			message=message.strip("/%&?")
+			self.history.update_chat_history(f"[color=730000] {username} {message} [/color]")	
+		else:
+			self.history.update_chat_history(f"[color=007194] {username} [/color] > {message}") #Chose Dark Cyan (#007194) for the color of the username
 
 	def send_message(self, _):
 		message = self.new_message.text #Getting the message text 
 		self.new_message.text = "" #Clearing the Text Field
 
-		if message:
-			self.history.update_chat_history(f"[color=007011]{chat_app.connect_page.username.text}[/color] > {message}")
+		if message:			
+			self.history.update_chat_history(f"[color=007011] {chat_app.connect_page.username.text} [/color] > {message}")
 			dungeon_client.send(message)
 
 		#Re-focusing to the input field
@@ -240,7 +247,7 @@ class ScrollableLabel(ScrollView):
 
 
 	def update_chat_history(self, message):
-		self.chat_history.text += "\n" + message
+		self.chat_history.text += '\n' + message
 
 		#Defining the updated layout height (Leaving some space at the end)
 		self.layout.height = self.chat_history.texture_size[1] + 20
@@ -248,7 +255,7 @@ class ScrollableLabel(ScrollView):
 		self.chat_history.text_size = (self.chat_history.width*0.98, None)
 
 		#Since the size of everything in the chat history is constantly increasing by every update, the scroll bar will come into play
-		#but the window won't be scrolled al thhe way down
+		#but the window won't be scrolled all the way down
 		#So to counter that problem, the empty "scroll_to_point" widget is added
 
 		self.scroll_to(self.scroll_to_point)  
