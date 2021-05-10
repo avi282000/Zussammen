@@ -143,6 +143,7 @@ def show_error(message):
 
 #The Chat Page (An App in itself)
 class ChatPage(GridLayout):
+
 	def __init__(self, **kwargs):
 		super().__init__(**kwargs)
 		self.cols = 1 #Defining the Columns and Rows for the Grid. The basic chatroom design is what I'm going with here
@@ -171,6 +172,30 @@ class ChatPage(GridLayout):
 		Clock.schedule_once(self.focus_text_input, 1)
 
 		dungeon_client.start_listening(self.incoming_message, show_error)
+
+		self.bind(size = self.adjust_fields)
+
+	def adjust_fields(self, *_):
+		if Window.size[1]*0.1 < 50:
+			new_height = Window.size[1] - 50
+
+		else:
+			new_height = Window.size[1]*0.9
+
+		self.history.height = new_height
+
+		if Window.size[1]*0.2 < 160:
+			new_width = Window.size[1] - 160
+
+		else:
+			new_width = Window.size[1]*0.8
+
+		self.new_message.width = new_width
+
+		Clock.schedule_once(self.history.update_chat_history_layout, 0.01)
+
+
+
 
 
 	#For sending the message by the press of the "Enter" the key
@@ -227,6 +252,13 @@ class ScrollableLabel(ScrollView):
 		#So to counter that problem, the empty "scroll_to_point" widget is added
 
 		self.scroll_to(self.scroll_to_point)  
+
+
+	def update_chat_history_layout(self, _=None):
+
+		self.layout.height = self.chat_history.texture_size[1] + 20
+		self.chat_history.height = self.chat_history.texture_size[1]
+		self.chat_history.text_size = (self.chat_history.width*0.98, None)
 
 
 
