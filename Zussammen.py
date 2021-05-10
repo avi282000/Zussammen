@@ -8,6 +8,7 @@ from kivy.uix.textinput import TextInput #Allows Text Input
 from kivy.uix.button import Button #Allows for the usage of Buttons
 from kivy.uix.screenmanager import ScreenManager, Screen #Allows for changes in Pages/Screens
 from kivy.core.window import Window #For altering the GUI window's parameters
+from kivy.uix.scrollview import ScrollView #For the Scroll Bar
 import dungeon_client
 from kivy.clock import Clock #For Scheduling tasks
 
@@ -148,25 +149,87 @@ class ChatPage(GridLayout):
 		self.rows = 2
 
 		#For Row 1
-		self.history = Label(height = Window.size[1]*0.9, size_hint_y = None) #Creating a Widget for all the message history. It'll take up 90% of the screen's size
+		self.history = ScrollableLabel(height = Window.size[1]*0.9, size_hint_y = None) #Creating a Widget for all the message history. It'll take up 90% of the screen's size
 		self.add_widget(self.history)
-
+		
 
 		#For Row 2
 		self.new_message = TextInput(width = Window.size[1]*0.8, size_hint_x = None, multiline = False) #Creating a Widget for typing in a new message. Will take up 80% of the width of the row. Clearly, Multilining won't be allowed
 		self.send = Button(text = "Send") #Creating the "Send" Button
 		self.send.bind(on_press = self.send_message)
+		
 
 		#Crating a 2 column layout for inputting the message
 		bottom_line = GridLayout(cols = 2) 
-		bottom_line.add_widget(self.new_message) #Adding the input text bar 
+		bottom_line.add_widget(self.new_message) #Adding the input text field 
 		bottom_line.add_widget(self.send) #Adding the "Send" Button
 		self.add_widget(bottom_line) #Adding the columns
 
-	def send_message(self, _):
-		print("Send a Message!")
+		Window.bind(on_key_down=self.on_key_down)
 
-		
+
+		Clock.schedule_once(self.focus_text_input, 1)
+
+		dungeon_client.start_listening(self.incoming_message, show_error)
+
+
+	#For sending the message by the press of the "Enter" the key
+	def on_key_down(self, instance, keyboard, keycode, text, modifiers):
+		if keycode == 40:
+			self.send_message(None)
+
+	#Re-focusing
+	def focus_text_input(self, _):
+		self.new_message.focus = True
+
+	def incoming_message(self, username, message):
+		self.history.update_chat_history(f"[color=007194]{username}[/color] > {message}") #Chose Dark Cyan (#007194) for the color of the username
+
+	def send_message(self, _):
+		message = self.new_message.text #Getting the message text 
+		self.new_message.text = "" #Clearing the Text Field
+
+		if message:
+			self.history.update_chat_history(f"[color=007011]{chat_app.connect_page.username.text}[/color] > {message}")
+			dungeon_client.send(message)
+
+		#Re-focusing to the input field
+		Clock.schedule_once(self.focus_text_input, 0.1)
+
+
+
+
+class ScrollableLabel(ScrollView):
+	def __init__(self, **kwargs):
+		super().__init__(**kwargs)
+
+		#Since ScrollView doesn't allow for multiple widgets, we might as well add a Layout, with the required number of widgets, to it
+		self.layout = GridLayout(cols = 1, size_hint_y = None) #"size_hint_y = None" so that it doesn't default to any height
+		self.add_widget(self.layout)
+
+		#Here, 2 widgets are required. 1 for the chat history and the other for scrolling to new messages
+		self.chat_history = Label(size_hint_y = None, markup = True)
+		self.scroll_to_point = Label()
+		self.layout.add_widget(self.chat_history)
+		self.layout.add_widget(self.scroll_to_point)
+
+
+	def update_chat_history(self, message):
+		self.chat_history.text += "\n" + message
+
+		#Defining the updated layout height (Leaving some space at the end)
+		self.layout.height = self.chat_history.texture_size[1] + 20
+		self.chat_history.height = self.chat_history.texture_size[1]
+		self.chat_history.text_size = (self.chat_history.width*0.98, None)
+
+		#Since the size of everything in the chat history is constantly increasing by every update, the scroll bar will come into play
+		#but the window won't be scrolled al thhe way down
+		#So to counter that problem, the empty "scroll_to_point" widget is added
+
+		self.scroll_to(self.scroll_to_point)  
+
+
+
 
 #Running the App
 if __name__ == '__main__':
