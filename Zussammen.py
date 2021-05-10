@@ -7,6 +7,7 @@ from kivy.uix.gridlayout import GridLayout #A Layout Structure
 from kivy.uix.textinput import TextInput #Allows Text Input
 from kivy.uix.button import Button #Allows for the usage of Buttons
 from kivy.uix.screenmanager import ScreenManager, Screen #Allows for changes in Pages/Screens
+from kivy.core.window import Window #For altering the GUI window's parameters
 import dungeon_client
 from kivy.clock import Clock #For Scheduling tasks
 
@@ -143,8 +144,29 @@ def show_error(message):
 class ChatPage(GridLayout):
 	def __init__(self, **kwargs):
 		super().__init__(**kwargs)
-		self.cols = 1
-		self.add_widget(Label(text = "The real shit will be here soon....", font_size = 32))
+		self.cols = 1 #Defining the Columns and Rows for the Grid. The basic chatroom design is what I'm going with here
+		self.rows = 2
+
+		#For Row 1
+		self.history = Label(height = Window.size[1]*0.9, size_hint_y = None) #Creating a Widget for all the message history. It'll take up 90% of the screen's size
+		self.add_widget(self.history)
+
+
+		#For Row 2
+		self.new_message = TextInput(width = Window.size[1]*0.8, size_hint_x = None, multiline = False) #Creating a Widget for typing in a new message. Will take up 80% of the width of the row. Clearly, Multilining won't be allowed
+		self.send = Button(text = "Send") #Creating the "Send" Button
+		self.send.bind(on_press = self.send_message)
+
+		#Crating a 2 column layout for inputting the message
+		bottom_line = GridLayout(cols = 2) 
+		bottom_line.add_widget(self.new_message) #Adding the input text bar 
+		bottom_line.add_widget(self.send) #Adding the "Send" Button
+		self.add_widget(bottom_line) #Adding the columns
+
+	def send_message(self, _):
+		print("Send a Message!")
+
+		
 
 #Running the App
 if __name__ == '__main__':
