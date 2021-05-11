@@ -9,9 +9,12 @@ from kivy.uix.button import Button #Allows for the usage of Buttons
 from kivy.uix.screenmanager import ScreenManager, Screen #Allows for changes in Pages/Screens
 from kivy.core.window import Window #For altering the GUI window's parameters
 from kivy.uix.scrollview import ScrollView #For the Scroll Bar
+from kivy.config import Config
 import dungeon_client
 from kivy.clock import Clock #For Scheduling tasks
 
+
+kivy.require("1.0.6")
 #The Initial Page (Connect Page)
 class ConnectPage(GridLayout):
 	def __init__(self,**kwargs):
@@ -127,6 +130,9 @@ class ChatApp(App):
 		screen = Screen(name="Info")
 		screen.add_widget(self.info_page)
 		self.screen_manager.add_widget(screen)
+
+
+		Config.set("graphics", "fullscreen", 1)
 
 		return self.screen_manager
 
