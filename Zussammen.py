@@ -14,7 +14,7 @@ import dungeon_client
 from kivy.clock import Clock #For Scheduling tasks
 
 
-kivy.require("1.0.6")
+kivy.require("1.10.1")
 #The Initial Page (Connect Page)
 class ConnectPage(GridLayout):
 	def __init__(self,**kwargs):
@@ -38,17 +38,17 @@ class ConnectPage(GridLayout):
 
 		#Widget 1
 		self.add_widget(Label(text="IP:"))
-		self.ip = TextInput(text=prev_ip, multiline=False)
+		self.ip = TextInput(text=prev_ip, multiline=False, write_tab=False)
 		self.add_widget(self.ip)
 
 		#Widget 2
 		self.add_widget(Label(text="Port:"))
-		self.port = TextInput(text=prev_port, multiline=False)
+		self.port = TextInput(text=prev_port, multiline=False, write_tab=False)
 		self.add_widget(self.port)
 
 		#Widget 3
 		self.add_widget(Label(text="UserName:"))
-		self.username = TextInput(text=prev_username, multiline=False)
+		self.username = TextInput(text=prev_username, multiline=False, write_tab=False)
 		self.add_widget(self.username)
 
 		#For the Button
@@ -209,6 +209,7 @@ class ChatPage(GridLayout):
 		if keycode == 40:
 			self.send_message(None)
 
+
 	#Re-focusing
 	def focus_text_input(self, _):
 		self.new_message.focus = True
@@ -221,14 +222,14 @@ class ChatPage(GridLayout):
 			message=message.strip("/%&?")
 			self.history.update_chat_history(f"[color=730000] {username} {message} [/color]")	
 		else:
-			self.history.update_chat_history(f"[color=007194] {username} [/color] > {message}") #Chose Dark Cyan (#007194) for the color of the username
+			self.history.update_chat_history(f"[color=007011] {username} [/color] > {message}") #Chose Dark Cyan (#007194) for the color of the username
 
 	def send_message(self, _):
 		message = self.new_message.text #Getting the message text 
 		self.new_message.text = "" #Clearing the Text Field
 
 		if message:			
-			self.history.update_chat_history(f"[color=007011] {chat_app.connect_page.username.text} [/color] > {message}")
+			self.history.update_chat_history(f"[color=007194] {chat_app.connect_page.username.text} [/color] > {message}")
 			dungeon_client.send(message)
 
 		#Re-focusing to the input field
