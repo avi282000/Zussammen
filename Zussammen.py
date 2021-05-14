@@ -77,6 +77,7 @@ class ConnectPage(GridLayout):
 		username = self.username.text
 
 		if not dungeon_client.connect(ip,port,username,show_error):
+			chat_app.screen_manager.current = "Err"								
 			return
 
 		#Creating the chat page
@@ -97,15 +98,31 @@ class InfoPage(GridLayout):
 		self.message.bind(width=self.update_text_width)
 		self.add_widget(self.message)
 
-		'''self.back = Button(text="Back")
-								self.back.bind(on_press=self.back_button)
-								self.add_widget(Label())
-								self.add_widget(self.back)
+	def update_info(self, message):
+		self.message.text = message
+
+	def update_text_width(self, *_):
+		self.message.text_size = (self.message.width*0.9, None)
+
+#The Error Page
+class ErrorPage(GridLayout):
+	def __init__(self,**kwargs):
+		super().__init__(**kwargs)
+
+		#Just 1 Column
+		self.cols = 1
+
+		self.message = Label(halign="center", valign="middle", font_size=32)
+		self.message.bind(width=self.update_text_width)
+		self.add_widget(self.message)
+
+		self.back = Button(text="Back")
+		self.back.bind(on_press=self.back_button)
+		self.add_widget(Label())
+		self.add_widget(self.back)
 						
-							def back_button(self,instance):
-								chat_app.screen_manager.current = "Connect"'''
-
-
+	def back_button(self,instance):
+		chat_app.screen_manager.current = "Connect"
 
 	def update_info(self, message):
 		self.message.text = message
@@ -131,6 +148,12 @@ class ChatApp(App):
 		screen.add_widget(self.info_page)
 		self.screen_manager.add_widget(screen)
 
+		#Screen 3
+		self.error_page = ErrorPage()
+		screen = Screen(name="Err")
+		screen.add_widget(self.error_page)
+		self.screen_manager.add_widget(screen)
+
 
 		Config.set("graphics", "fullscreen", 1)
 
@@ -142,10 +165,13 @@ class ChatApp(App):
 		screen.add_widget(self.chat_page)
 		self.screen_manager.add_widget(screen)
 
+
+
 def show_error(message):
-	chat_app.info_page.update_info(message)
-	chat_app.screen_manager.current = "Info"
-	Clock.schedule_once(sys.exit, 5)
+	chat_app.error_page.update_info(message)
+	chat_app.screen_manager.current = "Err"
+
+
 
 #The Chat Page (An App in itself)
 class ChatPage(GridLayout):
